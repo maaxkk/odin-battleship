@@ -1,0 +1,33 @@
+1) User opens website and see 2 gameboards
+2) He has 3 buttons
+2.1) Randomize -> randomize position of ships on his board
+2.2) Play -> start game
+2.3) Restart -> Clear board and start again
+3) We have 2 players, and active player is always starts from us, and then computer
+4) Active player can choose every square on board if he did not fired there before
+5) If someone of players fired in ship this square becomes red, otherwise blue
+6) If ship got number of hits like his size then this ship is sunk
+7) If every ship is sunk then game is over
+
+1) Class ship
+1.1) Properties: length, hits, isSunk
+1.1.2) Test that ship takes only his length squares on the board
+1.2) hit() function increase number of hits by one
+1.3) isSunk() if number of hits = length ship is sunk
+
+
+
+
+2) Class gameboard
+2.1) Place ship on the board
+2.2) receiveAttack function that takes pair of coordinates and increase hits of ship if it was hitted
+2.3) Should know when all ships was sunk
+
+
+3) Class player
+3.1) can take turns playing the game by attacking the enemy gameboard
+3.2) computer should know is move legal or not
+
+4) Main game loop and DOM manipulation
+4.1) create user interface
+4.2)
