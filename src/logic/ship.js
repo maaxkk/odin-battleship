@@ -4,6 +4,7 @@ class Ship {
     constructor(length) {
         this.length = length;
         this.hits = 0;
+        this.coords = [];
     }
 
     hit() {
@@ -18,5 +19,6 @@ class Ship {
         return false;
     }
 }
+
 
 module.exports = Ship;
