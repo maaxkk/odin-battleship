@@ -5,6 +5,7 @@ class Ship {
         this.length = length;
         this.hits = 0;
         this.coords = [];
+        this.direction = Math.floor(Math.random()*2)
     }
 
     hit() {

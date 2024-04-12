@@ -27,11 +27,16 @@ let ships = {
     // '5': new Ship(5),
 }
 
+ships['1'].direction = 0; // horizontally
+ships['2'].direction = 0;
+ships['3'].direction = 0;
+ships['4'].direction = 1; // vertically
+
 let shipsCoords = [
     [0,0],
     [2,2],
     [4,4],
-    [8,6],
+    [6,9],
     [9,0]
 ]
 
@@ -45,9 +50,16 @@ for (let i = 0; i < 10; i++) {
     }
 }
 
-function sinkShips(shipLen, y, x){
-    for (let i = x; i < x + shipLen; i++) {
-        board.receiveAttack([y, i], ships)
+function sinkShips(shipLen, y, x, direction){
+    if (direction === 0) {
+        for (let j = x; j < x + shipLen; j++) {
+            board.receiveAttack([y, j], ships)
+        }
+    } else {
+        for (let i = y; i < y + shipLen; i++) {
+            board.receiveAttack([i, x], ships)
+        }
+
     }
 }
 
@@ -72,7 +84,7 @@ describe('Placing ship', () => {
 
 describe('Placing ship', () => {
     it('Places ship at determined coords', () => {
-        jest.spyOn(board, 'getRandomCoords').mockReturnValue([2,2])
+        jest.spyOn(board, 'getRandomCoords').mockReturnValue([2,2,0])
         let [y,x] = board.getRandomCoords(ships['2'].length)
         board.placeShip(ships['2'], y, x)
         for (let i = x; i < ships['2'].length; i++) {
@@ -83,7 +95,7 @@ describe('Placing ship', () => {
 
 describe('Placing ship', () => {
     it('Places ship at determined coords', () => {
-        jest.spyOn(board, 'getRandomCoords').mockReturnValue([4,4])
+        jest.spyOn(board, 'getRandomCoords').mockReturnValue([4,4, 0])
         let [y,x] = board.getRandomCoords(ships['3'].length)
         board.placeShip(ships['3'], y, x)
         for (let i = x; i < ships['3'].length; i++) {
@@ -92,9 +104,10 @@ describe('Placing ship', () => {
     })
 })
 
+// Placing ship vertically
 describe('Placing ship', () => {
     it('Places ship at determined coords', () => {
-        jest.spyOn(board, 'getRandomCoords').mockReturnValue([8,6])
+        jest.spyOn(board, 'getRandomCoords').mockReturnValue([6,9,1])
         let [y,x] = board.getRandomCoords(ships['4'].length)
         board.placeShip(ships['4'], y, x)
         for (let i = x; i < ships['4'].length; i++) {
@@ -127,12 +140,30 @@ describe('ship is sunk', () => {
 // Testing gameIsOver function
 describe('gameIsOver', () => {
     it('tests if all ships was sunk', () => {
-        sinkShips(ships['1'].length, 0, 0)
-        sinkShips(ships['2'].length, 2, 2)
-        sinkShips(ships['3'].length, 4, 4)
-        sinkShips(ships['4'].length, 8, 6)
+        sinkShips(ships['1'].length, 0, 0, 0)
+        sinkShips(ships['2'].length, 2, 2, 0)
+        sinkShips(ships['3'].length, 4, 4, 0)
+        sinkShips(ships['4'].length, 6, 9, 1)
         console.table(board.board)
         console.log(JSON.stringify(ships))
         expect(board.gameOver(ships)).toBe('Game is over!')
+    })
+})
+
+
+// Testing surroundingWater function
+describe('surroundingWater', () => {
+    it('tests if in radius 1 square water was surrounded', () => {
+        // testing for [6,9] vertical ship with length 4
+        let surrounded = true;
+        for (let i = 5; i < 9; i++) { // ship is in the right bottom corner, we have to check only [5,8] [5,9] and range [5,8] to [9,8]
+            if (board.board[i][8] !== '🚫' || board.board[5][8] !== '🚫' ||
+                board.board[5][9] !== "🚫"
+            )
+            {
+                surrounded = false;
+            }
+        }
+        expect(surrounded).toBe(true)
     })
 })
