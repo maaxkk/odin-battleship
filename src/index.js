@@ -35,27 +35,36 @@ function getActivePlayer(){
 }
 
 players[activePlayer].fillBoard()
-players[activePlayer].placeShips(ships)
-// console.table(players[activePlayer].board)
+for (let ship in ships){
+    const[y,x] = players[activePlayer].getRandomCoords(ships[ship].length)
+    players[activePlayer].placeShip(ships[ship], y, x)
+}
 
 getActivePlayer()
 players[activePlayer].fillBoard()
-players[activePlayer].placeShips(ships2)
-// console.table(players[activePlayer].board)
+for (let ship in ships2){
+    let[y,x] = players[activePlayer].getRandomCoords(ships2[ship].length);
+    players[activePlayer].placeShip(ships2[ship], y, x);
+}
 
 players[activePlayer].receiveAttack([7,1], ships2)
 players[activePlayer].receiveAttack([2,1], ships2)
 players[activePlayer].receiveAttack([3,6], ships2)
 players[activePlayer].receiveAttack([6,1], ships2)
+
 getActivePlayer()
 
 players[activePlayer].receiveAttack([2,5], ships)
 players[activePlayer].receiveAttack([5,7], ships)
 players[activePlayer].receiveAttack([2,1], ships)
+players[activePlayer].receiveAttack([4,9], ships)
 
 console.table(players[activePlayer].board)
+
 getActivePlayer()
+
 console.table(players[activePlayer].board)
+
 
 console.log(JSON.stringify(ships))
 console.log(JSON.stringify(ships2))

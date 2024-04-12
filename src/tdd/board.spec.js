@@ -1,5 +1,19 @@
 "use strict";
 
+// visualize board
+//[
+//     [" ", " ", " ", " ", " ", " ", " ", " ", " ", " "],
+//     [" ", " ", " ", " ", " ", " ", " ", " ", " ", " "],
+//     [" ", " ", " ", " ", " ", " ", " ", " ", " ", " "],
+//     [" ", " ", " ", " ", " ", " ", " ", " ", " ", " "],
+//     [" ", " ", " ", " ", " ", " ", " ", " ", " ", " "],
+//     [" ", " ", " ", " ", " ", " ", " ", " ", " ", " "],
+//     [" ", " ", " ", " ", " ", " ", " ", " ", " ", " "],
+//     [" ", " ", " ", " ", " ", " ", " ", " ", " ", " "],
+//     [" ", " ", " ", " ", " ", " ", " ", " ", " ", " "],
+//     [" ", " ", " ", " ", " ", " ", " ", " ", " ", " "],
+// ];
+
 const Gameboard = require("../logic/gameboard.js");
 const Ship = require("../logic/ship.js");
 
@@ -13,20 +27,24 @@ let ships = {
     '5': new Ship(5),
 }
 
-const testArr = [
-    [" ", " ", " ", " ", " ", " ", " ", " ", " ", " "],
-    [" ", " ", " ", " ", " ", " ", " ", " ", " ", " "],
-    [" ", " ", " ", " ", " ", " ", " ", " ", " ", " "],
-    [" ", " ", " ", " ", " ", " ", " ", " ", " ", " "],
-    [" ", " ", " ", " ", " ", " ", " ", " ", " ", " "],
-    [" ", " ", " ", " ", " ", " ", " ", " ", " ", " "],
-    [" ", " ", " ", " ", " ", " ", " ", " ", " ", " "],
-    [" ", " ", " ", " ", " ", " ", " ", " ", " ", " "],
-    [" ", " ", " ", " ", " ", " ", " ", " ", " ", " "],
-    ["9", "9", "9", "9", "9", "9", "9", "9", "9", "9"], // e.g we have ship with size 9 👍
-];
+let shipsCoords = [
+    [0,0],
+    [2,2],
+    [4,4],
+    [0,6],
+    [9,0]
+]
+
+const testArr = []
+for (let i = 0; i < 10; i++) {
+    testArr[i] = []
+    for (let j = 0; j < 10; j++) {
+        testArr[i].push(' ')
+    }
+}
 
 
+// filling gameBoard
 describe("Gameboard", () => {
     test("Should return board(array)", () => {
         expect(board.fillBoard()).toStrictEqual(testArr);
@@ -34,23 +52,13 @@ describe("Gameboard", () => {
 });
 
 
-describe("Check if we have empty space for ship", () => {
-    test("Should return false or true, if y is 8 or 9 it should return false, because there is ship with size 9", () => {
-        expect(board.checkIfNotEmpty(3)).toBe(true);
-    });
-});
+describe('Placing ship', () => {
+    it('Places ship at determined coords', () => {
+        jest.spyOn(board, 'getRandomCoords').mockReturnValue([3,3])
+        board.placeShip(ships['1'])
+        expect(board[3][3]).toBe('1')
+    })
+})
 
-// hardcoded x and y values for test
-describe("Check if we have empty space for ship", () => {
-    test("Should return array of coordinates [3,3]", () => {
-        expect(board.checkIfNotEmpty(3)).toStrictEqual([3, 3]);
-    });
-});
-
-describe("Check if we have coords was applied to each ship correctly", () => {
-    test("Check if we have coords was applied to each ship correctly", () => {
-        expect(board.placeShips(ships)).toStrictEqual(ships);
-    });
-});
 
 
