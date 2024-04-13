@@ -110,11 +110,12 @@ class Gameboard {
 
     // helper function
     placeShips(ships){
-        let horizSum, vertSum = 0;
+        let horizSum = 0
+        let vertSum = 0;
         for (let ship in ships){
             if (ships[ship].direction === 0 ) horizSum += ships[ship].length
             else vertSum += ships[ship].length
-            ships[ship].direction = horizSum > 10 ? 1 : 0
+            ships[ship].direction = horizSum > 8 ? 1 : 0
             let [y, x] = this.getRandomCoords(ships[ship])
             this.placeShip(ships[ship], y, x)
         }
@@ -165,6 +166,8 @@ class Gameboard {
             }
         }
     }
+
+
 
     resetShips(ships){
         for (let ship in ships){

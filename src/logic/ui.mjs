@@ -99,16 +99,21 @@ function fireUser() {
 }
 
 function attackHandler(event){
-    if (event.target.dataset.y && event.target.dataset.x) {
+    if (event.target.dataset.y && event.target.dataset.x && activePlayer === 0) {
         const active = players[1]
         const squareY = event.target.dataset.y;
         const squareX = event.target.dataset.x;
-
         if (!active.receiveAttack([+squareY, +squareX], pcShips)) { // if this square was attacked already
             errorMsg.textContent = `*Square ${[squareY, squareX]} already was attacked!`
         } else {
-            if (active.gameOver(pcShips)) {
-                dialog.showModal();
+            // we don't let pc fire, if our last attacked square was a hit
+            if (active.board[+squareY][+squareX] === '💢'){
+                active.receiveAttack([+squareY, +squareX], pcShips)
+                pcRender();
+                if (active.gameOver(pcShips)) {
+                    dialog.showModal();
+                    return;
+                }
                 return;
             }
             errorMsg.textContent = "";
@@ -128,11 +133,14 @@ function pcFire() {
             y = Math.floor(Math.random() * 10)
             x = Math.floor(Math.random() * 10)
         } while (!active.receiveAttack([y, x], userShips))
+    } else if (active.board[y][x] === '💢') {
+        setTimeout(pcFire, 1000)
+        userRender();
+        return;
     }
     userRender();
     changePlayer();
 }
-
 
 function handleFire() {
     if (activePlayer === 0) {

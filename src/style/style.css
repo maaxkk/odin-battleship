@@ -112,6 +112,12 @@ dialog::backdrop {
     display: flex;
     justify-content: center;
     align-items: center;
+    gap: 24px;
+}
+
+.dialog-content > p {
+    color: royalblue;
+    font-size: 1.5rem;
 }
 
 .restart, .random {
@@ -142,3 +148,5 @@ button:hover {
     justify-content: center;
     align-items: center;
 }
+
+
