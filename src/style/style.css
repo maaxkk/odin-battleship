@@ -3,15 +3,28 @@
     padding: 0;
 }
 
+body {
+    min-height: 100vh;
+    font-family: 'Roboto', sans-serif;
+}
 
 header {
     display: flex;
     justify-content: center;
     align-items: center;
+    margin-bottom: 48px;
 }
 
 h1 {
     color: royalblue;
+}
+
+.names {
+    font-size: 2rem;
+    color: royalblue;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .content {
@@ -34,8 +47,16 @@ h1 {
     margin-left: 48px;
 }
 
+.user {
+    margin-left: calc(24px + 170px);
+}
+
 .pc-board {
     margin-right: 48px;
+}
+
+.pc, .error {
+    margin-right: calc(24px + 170px);
 }
 
 .cell {
@@ -53,5 +74,18 @@ h1 {
     filter: brightness(80%);
 }
 
+.fired {
+    background-color: red;
+}
 
+.surrounded {
+    background-color: blue;
+}
+
+.error {
+    display: flex;
+    justify-content: flex-end;
+    color: red;
+    font-size: 80%;
+}
 

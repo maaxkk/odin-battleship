@@ -11,6 +11,7 @@ let surroundingSquares = [
     [0, 1],
     [-1, 1],
 ]
+// just copy array above with .slice and push one more square [0,0] for checkIfNotEmpty function
 let possibleSquares = surroundingSquares.slice(0, surroundingSquares.length)
 possibleSquares.push([0, 0])
 
@@ -23,6 +24,7 @@ class Gameboard {
         this.rows = size;
         this.columns = size;
         this.board = [];
+        this.fillBoard(); // filling board after initialization
     }
 
     fillBoard() {
@@ -32,19 +34,24 @@ class Gameboard {
                 this.board[i].push(' ');
             }
         }
-        return this.board;
     }
 
     getRandomCoords(ship) {
         let randomY;
         let randomX;
+        let loops = 0;
         do {
-            console.log('loop horiz')
+            // small optimization of finding coords
+            loops += 1;
+            if (loops > 20){
+                ship.direction = ship.direction === 0 ? 1 : 0;
+                loops = 0;
+            }
             if (ship.direction === 0) { // horizontally
                 randomY = Math.floor(Math.random() * this.rows);
                 randomX = Math.floor(Math.random() * (this.columns - ship.length));
             } else { // vertically
-                randomY = Math.floor(Math.random() * (this.rows-ship.length));
+                randomY = Math.floor(Math.random() * (this.rows - ship.length));
                 randomX = Math.floor(Math.random() * this.columns);
             }
             // if we can't put our ship in range of (size of columns - start coordinate of ship), then we generate new coords
@@ -81,7 +88,6 @@ class Gameboard {
                 }
             }
         }
-
         return [randomY, randomX];
     }
 
@@ -90,17 +96,29 @@ class Gameboard {
         if (ship.direction === 0) {
             // placing ship -> horizontally
             for (let j = randomX; j < randomX + ship.length; j++) {
-                this.board[randomY][j] = ship.length;
+                this.board[randomY][j] = '#';
                 shipCoords.push([randomY, j])
             }
         } else {
             // now we place ship vertically, so we iterate only in rows
             for (let i = randomY; i < randomY + ship.length; i++) {
-                this.board[i][randomX] = ship.length;
+                this.board[i][randomX] = '#';
                 shipCoords.push([i, randomX])
             }
         }
         ship.coords = shipCoords;
+    }
+
+    // helper function
+    placeShips(ships){
+        let horizSum, vertSum = 0;
+        for (let ship in ships){
+            if (ships[ship].direction === 0 ) horizSum += ships[ship].length
+            else vertSum += ships[ship].length
+            ships[ship].direction = horizSum > 10 ? 1 : 0
+            let [y, x] = this.getRandomCoords(ships[ship])
+            this.placeShip(ships[ship], y, x)
+        }
     }
 
     receiveAttack(attackCoords, ships) {
@@ -108,7 +126,7 @@ class Gameboard {
             this.board[attackCoords[0]][attackCoords[1]] === '🚫' ||
             this.board[attackCoords[0]][attackCoords[1]] === '💢'
         ) {
-            return
+            return false; // temporary stub
         }
         for (let ship in ships) {
             for (let coords of ships[ship].coords) {
@@ -119,11 +137,12 @@ class Gameboard {
                         console.log(`Ship ${ship} was sunk!`)
                         this.makeSurroundingWater(ships[ship])
                     }
-                    return;
+                    return true;
                 }
             }
         }
         this.board[attackCoords[0]][attackCoords[1]] = '🚫'
+        return true;
     }
 
     makeSurroundingWater(ship) {

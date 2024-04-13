@@ -32,14 +32,6 @@ ships['2'].direction = 0;
 ships['3'].direction = 0;
 ships['4'].direction = 1; // vertically
 
-let shipsCoords = [
-    [0,0],
-    [2,2],
-    [4,4],
-    [6,9],
-    [9,0]
-]
-
 // helpers
 
 const testArr = []
@@ -63,10 +55,10 @@ function sinkShips(shipLen, y, x, direction){
     }
 }
 
-// filling gameBoard
+// comparing board array
 describe("Gameboard", () => {
     test("Should return board(array)", () => {
-        expect(board.fillBoard()).toStrictEqual(testArr);
+        expect(board.board).toStrictEqual(testArr);
     });
 });
 
@@ -77,7 +69,7 @@ describe('Placing ship', () => {
         let [y,x] = board.getRandomCoords(ships['1'].length)
         board.placeShip(ships['1'], y, x)
         for (let i = x; i < ships['1'].length; i++) {
-            expect(board.board[y][i]).toBe(1)
+            expect(board.board[y][i]).toBe('#')
         }
     })
 })
