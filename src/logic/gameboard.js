@@ -62,8 +62,7 @@ class Gameboard {
     }
 
     checkIfNotEmpty(ship, randomY, randomX) {
-        // so far we place ship horizontally so we iterate only in columns
-        if (ship.direction === 0) {
+        if (ship.direction === 0) { // horiz
             for (let j = randomX; j < randomX + ship.length; j++) {
                 for (let square of possibleSquares) {
                     let validSquare = [randomY + square[0], j + square[1]]
@@ -75,7 +74,7 @@ class Gameboard {
                     }
                 }
             }
-        } else {
+        } else { // vertically
             for (let i = randomY; i < randomY + ship.length; i++) {
                 for (let square of possibleSquares) {
                     let validSquare = [i + square[0], randomX + square[1]]
@@ -167,13 +166,21 @@ class Gameboard {
         }
     }
 
+    resetShips(ships){
+        for (let ship in ships){
+            ships[ship].resetHits();
+            ships[ship].resetCoords();
+        }
+    }
+
     gameOver(ships) {
         for (let ship in ships) {
             if (!ships[ship].isSunk()) {
                 return false
             }
         }
-        return `Game is over!`;
+        this.resetShips(ships);
+        return true;
     }
 
 }

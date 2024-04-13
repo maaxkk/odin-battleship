@@ -138,7 +138,7 @@ describe('gameIsOver', () => {
         sinkShips(ships['4'].length, 6, 9, 1)
         console.table(board.board)
         console.log(JSON.stringify(ships))
-        expect(board.gameOver(ships)).toBe('Game is over!')
+        expect(board.gameOver(ships)).toBe(true)
     })
 })
 

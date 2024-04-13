@@ -4,6 +4,9 @@ import Gameboard from "./gameboard.js";
 import Ship from "./ship.js";
 
 const errorMsg = document.querySelector('.error')
+const dialog = document.querySelector('dialog')
+const restartBtn = document.querySelector('.restart')
+const randomBtn = document.querySelector('.random')
 
 const players = {
     0: new Gameboard(10),
@@ -77,9 +80,13 @@ function pcRender() {
             const btn = document.createElement('button')
             btn.dataset.y = `${i}`;
             btn.dataset.x = `${j}`;
-            if (active.board[i][j] === '💢') btn.classList.add('fired')
-            else if (active.board[i][j] === '🚫') btn.classList.add('surrounded')
-            else btn.classList.add('cell')
+            if (active.board[i][j] === '💢') {
+                btn.textContent = active.board[i][j]
+                btn.classList.add('fired')
+            } else if (active.board[i][j] === '🚫') {
+                btn.textContent = active.board[i][j]
+                btn.classList.add('surrounded')
+            } else btn.classList.add('cell')
             btn.textContent = active.board[i][j]
             board.appendChild(btn)
         }
@@ -88,22 +95,28 @@ function pcRender() {
 
 function fireUser() {
     const board = document.querySelector('.pc-board')
-    const active = players[1]
-    board.addEventListener('click', function (event) {
-        if (event.target.dataset.y && event.target.dataset.x) {
-            const squareY = event.target.dataset.y;
-            const squareX = event.target.dataset.x;
+    board.addEventListener('click', attackHandler)
+}
 
-            if (!active.receiveAttack([+squareY, +squareX], pcShips)) { // if this square was attacked already
-                errorMsg.textContent = `*Square ${[squareY, squareX]} already was attacked!`
-            } else {
-                errorMsg.textContent = "";
-                pcRender();
-                changePlayer();
-                handleFire();
+function attackHandler(event){
+    if (event.target.dataset.y && event.target.dataset.x) {
+        const active = players[1]
+        const squareY = event.target.dataset.y;
+        const squareX = event.target.dataset.x;
+
+        if (!active.receiveAttack([+squareY, +squareX], pcShips)) { // if this square was attacked already
+            errorMsg.textContent = `*Square ${[squareY, squareX]} already was attacked!`
+        } else {
+            if (active.gameOver(pcShips)) {
+                dialog.showModal();
+                return;
             }
+            errorMsg.textContent = "";
+            pcRender();
+            changePlayer();
+            handleFire();
         }
-    })
+    }
 }
 
 function pcFire() {
@@ -129,11 +142,40 @@ function handleFire() {
     }
 }
 
+function restart() {
+    restartBtn.addEventListener('click', function () {
+        dialog.close();
+        players[0].fillBoard();
+        players[1].fillBoard();
+
+        players[0].placeShips(userShips);
+        players[1].placeShips(pcShips);
+
+        screenController();
+    })
+}
+
+function random() {
+    randomBtn.addEventListener('click', function () {
+        players[0].fillBoard();
+        players[1].fillBoard();
+
+        players[0].resetShips(userShips);
+        players[1].resetShips(pcShips);
+
+        players[0].placeShips(userShips);
+        players[1].placeShips(pcShips);
+        screenController();
+    })
+}
+
+restart();
+random();
+
 export function screenController() {
     userRender();
     pcRender();
     handleFire();
 }
-
 
 export default screenController

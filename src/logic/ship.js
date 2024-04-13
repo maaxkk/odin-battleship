@@ -12,7 +12,12 @@ class Ship {
         this.hits++;
         return this;
     }
-
+    resetHits() {
+        this.hits = 0;
+    }
+    resetCoords() {
+        this.coords = [];
+    }
     isSunk() {
         return this.hits === this.length
     }
