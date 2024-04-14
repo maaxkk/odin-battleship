@@ -2,6 +2,7 @@
 
 import Gameboard from "./gameboard.js";
 import Ship from "./ship.js";
+import {shipOfOneSunk, fireMainDirections, shipIsVert, shipIsHoriz} from "./ai.js";
 
 const errorMsg = document.querySelector('.error')
 const dialog = document.querySelector('dialog')
@@ -20,12 +21,14 @@ const userShips = {
     '2': new Ship(1),
     '3': new Ship(1),
     '4': new Ship(1),
-    // '5': new Ship(2),
-    '6': new Ship(2),
-    '7': new Ship(2),
-    '8': new Ship(3),
-    '9': new Ship(3),
-    '10': new Ship(4),
+    '6': new Ship(1),
+    '7': new Ship(1),
+    '8': new Ship(1),
+    '11': new Ship(2),
+    '12': new Ship(2),
+    '13': new Ship(2),
+    '14': new Ship(2),
+    '5': new Ship(2),
 }
 
 const pcShips = {
@@ -98,7 +101,7 @@ function fireUser() {
     board.addEventListener('click', attackHandler)
 }
 
-function attackHandler(event){
+function attackHandler(event) {
     if (event.target.dataset.y && event.target.dataset.x && activePlayer === 0) {
         const active = players[1]
         const squareY = event.target.dataset.y;
@@ -107,7 +110,7 @@ function attackHandler(event){
             errorMsg.textContent = `*Square ${[squareY, squareX]} already was attacked!`
         } else {
             // we don't let pc fire, if our last attacked square was a hit
-            if (active.board[+squareY][+squareX] === '💢'){
+            if (active.board[+squareY][+squareX] === '💢') {
                 active.receiveAttack([+squareY, +squareX], pcShips)
                 pcRender();
                 if (active.gameOver(pcShips)) {
@@ -124,28 +127,130 @@ function attackHandler(event){
     }
 }
 
+function getRandomCoordinates() {
+    return [Math.floor(Math.random() * 10), Math.floor(Math.random() * 10)];
+}
+
 function pcFire() {
-    const active = players[0]
-    let y = Math.floor(Math.random() * 10)
-    let x = Math.floor(Math.random() * 10)
-    if (!active.receiveAttack([y, x], userShips)) {
-        do {
-            y = Math.floor(Math.random() * 10)
-            x = Math.floor(Math.random() * 10)
-        } while (!active.receiveAttack([y, x], userShips))
-    } else if (active.board[y][x] === '💢') {
-        setTimeout(pcFire, 1000)
-        userRender();
-        return;
+    const active = players[0];
+    let y, x;
+    do {
+        [y, x] = getRandomCoordinates();
+    } while (!active.receiveAttack([y, x], userShips));
+    if (active.board[y][x] === '💢') { // if pc hits user's ship
+        if (shipOfOneSunk(active.board, y, x)) {
+            setTimeout(pcFire, 1000)
+            userRender();
+            console.log('ship with size 1 was sunk')
+            return;
+        } else { // if ship did not sink, his size is more than 2
+            const boardFromPcView = active.board.map(row => row.map(cell => {
+                if (cell === '#'){
+                    cell = ' ';
+                }
+                return cell;
+            }))
+            q = fireMainDirections(boardFromPcView, y, x)
+            startCoords = [y, x]
+            setTimeout(() => smartPc(y, x), 500);
+            userRender();
+            return;
+        }
     }
     userRender();
     changePlayer();
 }
 
+let q = []
+let startCoords = []
+let wasHit = false;
+
+
+// not finished bad solution
+function smartPc(y, x) {
+    if (q.length === 0){
+        console.log('q is empty')
+        return;
+    }
+    let active = players[0]
+    if (!shipIsHoriz(active.board, y, x) || !shipIsVert(active.board, y, x)){
+        const nextSquare = q.shift()
+        active.receiveAttack(nextSquare, userShips)
+        userRender();
+        if (active.board[nextSquare[0]][nextSquare[1]] === '💢') {
+            // if ship was size of 2
+            // trying to find direction of ship
+            const skip = [nextSquare[0] - startCoords[0], nextSquare[1] - startCoords[1]]
+            const skip2 = [startCoords[0] - nextSquare[0], startCoords[1] - nextSquare[1]]
+            if (nextSquare[1] > startCoords[1]) {
+                // ship is horizontally
+                if (shipOfOneSunk(active.board, startCoords[0], startCoords[1], skip) && shipOfOneSunk(active.board, nextSquare[0], nextSquare[1], skip2)) {
+                    // ship was sunk
+                    q = [];
+                    startCoords = [];
+                    wasHit = false;
+                    setTimeout(pcFire, 500);
+                    return;
+                } else {
+                    // if size is more than 2
+                }
+            } else if (nextSquare[1] < startCoords[1]){
+                if (shipOfOneSunk(active.board, startCoords[0], startCoords[1], skip2) && shipOfOneSunk(active.board, nextSquare[0], nextSquare[1], skip)) {
+                    // ship was sunk
+                    q = [];
+                    startCoords = [];
+                    wasHit = false;
+                    setTimeout(pcFire, 500);
+                    return;
+                } else {
+                    // if size is more than 2
+                }
+            } else if (nextSquare[0] > startCoords[0]){
+                // ship is vertically
+                if (shipOfOneSunk(active.board, startCoords[0], startCoords[1], skip) && shipOfOneSunk(active.board, nextSquare[0], nextSquare[1], skip2)) {
+                    // ship was sunk
+                    q = [];
+                    startCoords = [];
+                    wasHit = false;
+                    setTimeout(pcFire, 500);
+                    return;
+                } else {
+                    // if size is more than 2
+                }
+            } else if (nextSquare[0] < startCoords[0]) {
+                // ship is vertically
+                if (shipOfOneSunk(active.board, startCoords[0], startCoords[1], skip2) && shipOfOneSunk(active.board, nextSquare[0], nextSquare[1], skip)) {
+                    // ship was sunk
+                    q = [];
+                    startCoords = [];
+                    wasHit = false;
+                    setTimeout(pcFire, 500);
+                    return;
+                } else {
+                    // if size is more than 2
+                }
+            }
+        } else {
+            wasHit = true;
+            console.log(JSON.stringify(q))
+            changePlayer();
+        }
+    }
+    if (shipIsHoriz(active.board, y, x)){
+
+    }
+    else if (shipIsVert(active.board, y, x)){
+
+    }
+}
+
+
 function handleFire() {
     if (activePlayer === 0) {
         fireUser();
-    } else if (activePlayer === 1) {
+    } else if (activePlayer === 1 && wasHit) {
+        smartPc(startCoords[0], startCoords[1]);
+    } else {
         pcFire();
     }
 }

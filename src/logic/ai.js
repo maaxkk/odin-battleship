@@ -24,9 +24,9 @@ let diagonalSquares = [
 
 let mainSquares = [
     [0, -1],
+    [1, 0],
     [0, 1],
     [-1, 0],
-    [1, 0],
 ]
 
 let horizSquares = [
@@ -47,15 +47,16 @@ function checkBoundaries([x, y]) {
 // If after hitting ship, water outside ship is not surrounded, it means ship size is more than 1
 
 // ship with size of 1 is edge case, we check every square outside of this ship
-function shipOfOneSunk(board, y, x) {
+export function shipOfOneSunk(board, y, x, skip = [100, 100]) {
     for (let surrCoords of surroundingSquares) {
+        if (surrCoords[0] === skip[0] && surrCoords[1] === skip[1]) continue;
         let validSquare = [y + surrCoords[0], x + surrCoords[1]]
         if (!checkBoundaries(validSquare)) continue;
         else if (board[validSquare[0]][validSquare[1]] === ' ') {
             return false;
         }
-        return true;
     }
+    return true;
 }
 
 // if function above returns false, it means ship length is more than 1
@@ -70,7 +71,19 @@ function shipOfOneSunk(board, y, x) {
 // otherwise ship size was 2
 // 4) Repeat process for ship with size 3 and 4
 
-function shipIsHoriz(board, y, x) {
+export function fireMainDirections(board, y, x){
+    const output = [];
+    for (let square of mainSquares){
+        let validSquare = [y + square[0], x + square[1]];
+        if (!checkBoundaries(validSquare)) continue;
+        if (board[validSquare[0]][validSquare[1]] === ' ') {
+            output.push(validSquare);
+        }
+    }
+    return output;
+}
+
+export function shipIsHoriz(board, y, x) {
     for (let square of horizSquares) {
         let validSquare = [y + square[0], x + square[1]]
         if (!checkBoundaries(validSquare)) continue;
@@ -81,7 +94,7 @@ function shipIsHoriz(board, y, x) {
     return false;
 }
 
-function shipIsVert(board, y, x) {
+export function shipIsVert(board, y, x) {
     for (let square of vertSquares) {
         let validSquare = [y + square[0], x + square[1]]
         if (!checkBoundaries(validSquare)) continue;
@@ -91,3 +104,5 @@ function shipIsVert(board, y, x) {
     }
     return false;
 }
+
+export default {shipOfOneSunk, fireMainDirections, shipIsVert, shipIsHoriz}
