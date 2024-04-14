@@ -21,12 +21,12 @@ const userShips = {
     '2': new Ship(1),
     '3': new Ship(1),
     '4': new Ship(1),
-    '5': new Ship(3),
-    '6': new Ship(3),
-    '11': new Ship(2),
-    '12': new Ship(2),
-    '13': new Ship(2),
-
+    // '5': new Ship(2),
+    '6': new Ship(2),
+    '7': new Ship(2),
+    '8': new Ship(3),
+    '9': new Ship(3),
+    '10': new Ship(3),
 }
 
 const pcShips = {
@@ -39,7 +39,7 @@ const pcShips = {
     '7': new Ship(2),
     '8': new Ship(3),
     '9': new Ship(3),
-    '10': new Ship(4),
+    '10': new Ship(3),
 }
 
 let activePlayer = 0;
@@ -136,7 +136,10 @@ function pcFire() {
         [y, x] = getRandomCoordinates();
     } while (!active.receiveAttack([y, x], userShips));
     if (active.board[y][x] === '💢') { // if pc hits user's ship
-        if (active.gameOver(pcShips)) {
+        if (active.gameOver(userShips)) {
+            userRender();
+            const congratulations = document.querySelector('.congratulations')
+            congratulations.textContent = 'Noooooooo PC won :('
             dialog.showModal();
             return;
         }
@@ -179,6 +182,12 @@ function smartPc(y, x) {
         const nextSquare = q.shift()
         active.receiveAttack(nextSquare, userShips)
         userRender();
+        if (active.gameOver(userShips)) {
+            const congratulations = document.querySelector('.congratulations')
+            congratulations.textContent = 'Noooooooo PC won :('
+            dialog.showModal();
+            return;
+        }
         if (active.board[nextSquare[0]][nextSquare[1]] === '💢') {
             // if ship was size of 2
             // trying to find direction of ship
@@ -286,6 +295,12 @@ function smartPc(y, x) {
         // return;
     }
     if (shipIsVert(active.board, y, x)){
+        if (active.gameOver(userShips)) {
+            const congratulations = document.querySelector('.congratulations')
+            congratulations.textContent = 'Noooooooo PC won :('
+            dialog.showModal();
+            return;
+        }
         const verNextSquare = q.shift();
         active.receiveAttack(verNextSquare, userShips);
         userRender();
