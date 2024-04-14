@@ -21,14 +21,12 @@ const userShips = {
     '2': new Ship(1),
     '3': new Ship(1),
     '4': new Ship(1),
-    '6': new Ship(1),
-    '7': new Ship(1),
-    '8': new Ship(1),
+    '5': new Ship(3),
+    '6': new Ship(3),
     '11': new Ship(2),
     '12': new Ship(2),
     '13': new Ship(2),
-    '14': new Ship(2),
-    '5': new Ship(2),
+
 }
 
 const pcShips = {
@@ -138,6 +136,10 @@ function pcFire() {
         [y, x] = getRandomCoordinates();
     } while (!active.receiveAttack([y, x], userShips));
     if (active.board[y][x] === '💢') { // if pc hits user's ship
+        if (active.gameOver(pcShips)) {
+            dialog.showModal();
+            return;
+        }
         if (shipOfOneSunk(active.board, y, x)) {
             setTimeout(pcFire, 1000)
             userRender();
@@ -152,7 +154,7 @@ function pcFire() {
             }))
             q = fireMainDirections(boardFromPcView, y, x)
             startCoords = [y, x]
-            setTimeout(() => smartPc(y, x), 500);
+            setTimeout(() => smartPc(y, x), 1000);
             userRender();
             return;
         }
@@ -189,10 +191,16 @@ function smartPc(y, x) {
                     q = [];
                     startCoords = [];
                     wasHit = false;
-                    setTimeout(pcFire, 500);
+                    setTimeout(pcFire, 1000);
                     return;
                 } else {
                     // if size is more than 2
+                    q = [];
+                    wasHit = false;
+                    if (startCoords[1] - 1 >= 0) q.push([startCoords[0], startCoords[1] - 1])
+                    if (nextSquare[1] + 1 <= 9) q.push([nextSquare[0], nextSquare[1] + 1])
+                    setTimeout(() => smartPc(y, x), 1000);
+                    return;
                 }
             } else if (nextSquare[1] < startCoords[1]){
                 if (shipOfOneSunk(active.board, startCoords[0], startCoords[1], skip2) && shipOfOneSunk(active.board, nextSquare[0], nextSquare[1], skip)) {
@@ -200,10 +208,16 @@ function smartPc(y, x) {
                     q = [];
                     startCoords = [];
                     wasHit = false;
-                    setTimeout(pcFire, 500);
+                    setTimeout(pcFire, 1000);
                     return;
                 } else {
                     // if size is more than 2
+                    q = [];
+                    wasHit = false;
+                    if (startCoords[1] + 1 <= 9) q.push([startCoords[0], startCoords[1] + 1])
+                    if (nextSquare[1] - 1 >= 0) q.push([nextSquare[0], nextSquare[1] - 1])
+                    smartPc(y, x);
+                    return;
                 }
             } else if (nextSquare[0] > startCoords[0]){
                 // ship is vertically
@@ -212,10 +226,16 @@ function smartPc(y, x) {
                     q = [];
                     startCoords = [];
                     wasHit = false;
-                    setTimeout(pcFire, 500);
+                    setTimeout(pcFire, 1000);
                     return;
                 } else {
                     // if size is more than 2
+                    q = [];
+                    wasHit = false;
+                    if (startCoords[0] - 1 >= 0) q.push([startCoords[0] - 1, startCoords[1]])
+                    if (nextSquare[1] + 1 <= 9) q.push([nextSquare[0] + 1, nextSquare[1]])
+                    smartPc(y, x);
+                    return;
                 }
             } else if (nextSquare[0] < startCoords[0]) {
                 // ship is vertically
@@ -224,23 +244,68 @@ function smartPc(y, x) {
                     q = [];
                     startCoords = [];
                     wasHit = false;
-                    setTimeout(pcFire, 500);
+                    setTimeout(pcFire, 1000);
                     return;
                 } else {
                     // if size is more than 2
+                    q = [];
+                    wasHit = false;
+                    if (startCoords[0] + 1 <= 9) q.push([startCoords[0] + 1, startCoords[1]])
+                    if (nextSquare[0] - 1 >= 0) q.push([nextSquare[0] - 1, nextSquare[1]])
+                    smartPc(y, x);
+                    return;
                 }
             }
         } else {
             wasHit = true;
             console.log(JSON.stringify(q))
             changePlayer();
+            return;
         }
     }
-    if (shipIsHoriz(active.board, y, x)){
-
+    if (shipIsHoriz(active.board, y, x)) {
+        const horNextSquare = q.shift();
+        active.receiveAttack(horNextSquare, userShips);
+        userRender();
+        if (active.board[horNextSquare[0]][horNextSquare[1]] === '💢') {
+            // if ship was size of 3
+            console.log('Ship with size of 3 was sunk')
+            wasHit = false;
+            q = [];
+            startCoords = [];
+            pcFire();
+            return;
+        } else {
+            wasHit = true;
+            changePlayer();
+            return;
+        }
+    } else {
+        wasHit = true;
+        changePlayer();
+        // return;
     }
-    else if (shipIsVert(active.board, y, x)){
-
+    if (shipIsVert(active.board, y, x)){
+        const verNextSquare = q.shift();
+        active.receiveAttack(verNextSquare, userShips);
+        userRender();
+        if (active.board[verNextSquare[0]][verNextSquare[1]] === '💢') {
+            // if ship was size of 3
+            console.log('Ship with size of 3 was sunk')
+            wasHit = false;
+            q = [];
+            startCoords = [];
+            pcFire();
+            return;
+        } else {
+            wasHit = true;
+            changePlayer();
+            return;
+        }
+    } else {
+        wasHit = true;
+        changePlayer();
+        return;
     }
 }
 
