@@ -26,7 +26,7 @@ const userShips = {
     '7': new Ship(2),
     '8': new Ship(3),
     '9': new Ship(3),
-    '10': new Ship(3),
+    '10': new Ship(4),
 }
 
 const pcShips = {
@@ -39,7 +39,7 @@ const pcShips = {
     '7': new Ship(2),
     '8': new Ship(3),
     '9': new Ship(3),
-    '10': new Ship(3),
+    '10': new Ship(4),
 }
 
 let activePlayer = 0;
@@ -88,7 +88,7 @@ function pcRender() {
                 btn.textContent = active.board[i][j]
                 btn.classList.add('surrounded')
             } else btn.classList.add('cell')
-            btn.textContent = active.board[i][j]
+            // btn.textContent = active.board[i][j]
             board.appendChild(btn)
         }
     }
@@ -204,11 +204,12 @@ function smartPc(y, x) {
                     return;
                 } else {
                     // if size is more than 2
+                    console.log('ship was not sunk')
                     q = [];
                     wasHit = false;
                     if (startCoords[1] - 1 >= 0) q.push([startCoords[0], startCoords[1] - 1])
                     if (nextSquare[1] + 1 <= 9) q.push([nextSquare[0], nextSquare[1] + 1])
-                    setTimeout(() => smartPc(y, x), 1000);
+                    setTimeout(() => smartPc(nextSquare[0], nextSquare[1]), 1000);
                     return;
                 }
             } else if (nextSquare[1] < startCoords[1]){
@@ -221,11 +222,12 @@ function smartPc(y, x) {
                     return;
                 } else {
                     // if size is more than 2
+                    console.log('ship was not sunk')
                     q = [];
                     wasHit = false;
                     if (startCoords[1] + 1 <= 9) q.push([startCoords[0], startCoords[1] + 1])
                     if (nextSquare[1] - 1 >= 0) q.push([nextSquare[0], nextSquare[1] - 1])
-                    smartPc(y, x);
+                    setTimeout(() => smartPc(nextSquare[0], nextSquare[1]), 1000);
                     return;
                 }
             } else if (nextSquare[0] > startCoords[0]){
@@ -243,7 +245,7 @@ function smartPc(y, x) {
                     wasHit = false;
                     if (startCoords[0] - 1 >= 0) q.push([startCoords[0] - 1, startCoords[1]])
                     if (nextSquare[1] + 1 <= 9) q.push([nextSquare[0] + 1, nextSquare[1]])
-                    smartPc(y, x);
+                    setTimeout(() => smartPc(nextSquare[0], nextSquare[1]), 1000);
                     return;
                 }
             } else if (nextSquare[0] < startCoords[0]) {
@@ -261,12 +263,13 @@ function smartPc(y, x) {
                     wasHit = false;
                     if (startCoords[0] + 1 <= 9) q.push([startCoords[0] + 1, startCoords[1]])
                     if (nextSquare[0] - 1 >= 0) q.push([nextSquare[0] - 1, nextSquare[1]])
-                    smartPc(y, x);
+                    setTimeout(() => smartPc(nextSquare[0], nextSquare[1]), 1000);
                     return;
                 }
             }
         } else {
             wasHit = true;
+            console.log('Was hit with ship 2')
             console.log(JSON.stringify(q))
             changePlayer();
             return;
@@ -282,25 +285,13 @@ function smartPc(y, x) {
             wasHit = false;
             q = [];
             startCoords = [];
-            pcFire();
-            return;
+            setTimeout(pcFire, 1000);
         } else {
             wasHit = true;
             changePlayer();
-            return;
         }
-    } else {
-        wasHit = true;
-        changePlayer();
-        // return;
     }
     if (shipIsVert(active.board, y, x)){
-        if (active.gameOver(userShips)) {
-            const congratulations = document.querySelector('.congratulations')
-            congratulations.textContent = 'Noooooooo PC won :('
-            dialog.showModal();
-            return;
-        }
         const verNextSquare = q.shift();
         active.receiveAttack(verNextSquare, userShips);
         userRender();
@@ -310,17 +301,11 @@ function smartPc(y, x) {
             wasHit = false;
             q = [];
             startCoords = [];
-            pcFire();
-            return;
+            setTimeout(pcFire, 1000);
         } else {
             wasHit = true;
             changePlayer();
-            return;
         }
-    } else {
-        wasHit = true;
-        changePlayer();
-        return;
     }
 }
 
