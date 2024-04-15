@@ -26,7 +26,7 @@ const userShips = {
     '7': new Ship(2),
     '8': new Ship(3),
     '9': new Ship(3),
-    '10': new Ship(4),
+    '10': new Ship(3),
 }
 
 const pcShips = {
@@ -39,7 +39,7 @@ const pcShips = {
     '7': new Ship(2),
     '8': new Ship(3),
     '9': new Ship(3),
-    '10': new Ship(4),
+    '10': new Ship(3),
 }
 
 let activePlayer = 0;
