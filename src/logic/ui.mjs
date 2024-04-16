@@ -27,11 +27,15 @@ const players = {
 // so far it works only if you exclude Ship with size 1 and 2
 const userShips = {
     // '1': new Ship(1),
-    '3': new Ship(3),
-    '4': new Ship(3),
+    '2': new Ship(1),
+    '3': new Ship(1),
+    '4': new Ship(1),
     // '5': new Ship(2),
-    '11': new Ship(3),
-    '12': new Ship(3),
+    '6': new Ship(2),
+    '7': new Ship(2),
+    '8': new Ship(3),
+    '9': new Ship(3),
+    '10': new Ship(4),
 }
 
 const pcShips = {
@@ -144,10 +148,10 @@ function pcFire() {
         if (shipWasSunk(userShips, y, x)) {
             console.log('test')
             userRender();
-            setTimeout(pcFire, 1000);
+            setTimeout(pcFire, 500);
             return;
         } else {
-            setTimeout(() => targetFire(y, x), 1000)
+            setTimeout(() => targetFire(y, x), 500)
             return;
         }
     }
@@ -174,13 +178,17 @@ function targetFire(y, x) {
             userRender();
             if (shipWasSunk(userShips, next[0], next[1])) {
                 console.log('ship with size 3 was sunk')
-                setTimeout(pcFire, 1000);
+                setTimeout(pcFire, 500);
                 tmpSquare = null;
                 return;
-            } else {
-                changePlayer();
+            } else if (gameBoard.board[next[0]][next[1]] === '💢') {
+                // ship size is more than 3
+                setTimeout(() => targetFire(next[0], next[1]), 500)
                 return;
-            }
+                } else {
+                    changePlayer();
+                    return;
+                }
         } else {
             queue = fireLeft(gameBoard.board, y, x)
             const next = queue.shift();
@@ -188,10 +196,25 @@ function targetFire(y, x) {
             userRender();
             if (shipWasSunk(userShips, next[0], next[1])) {
                 console.log('ship with size 3 was sunk')
-                setTimeout(pcFire, 1000);
+                setTimeout(pcFire, 500);
                 tmpSquare = null;
                 return;
-
+            } else if (gameBoard.board[next[0]][next[1]] === '💢') {
+                // ship size is more than 3
+                if (next[1] - 1 >= 0) {
+                    gameBoard.receiveAttack([next[0], next[1]-1], userShips)
+                    if (shipWasSunk(userShips, next[0], next[1] - 1)){
+                        setTimeout(pcFire, 500);
+                        return;
+                    } else {
+                        setTimeout(() => targetFire(start[0], start[1]), 500);
+                        return;
+                    }
+                } else {
+                    tmpSquare = [start[0], start[1]]
+                    changePlayer();
+                    return;
+                }
             } else {
                 tmpSquare = [start[0], start[1]]
                 changePlayer();
@@ -210,7 +233,7 @@ function targetFire(y, x) {
             userRender();
             if (shipWasSunk(userShips, next[0], next[1])) {
                 console.log('ship with size 3 was sunk')
-                setTimeout(pcFire, 1000);
+                setTimeout(pcFire, 500);
                 tmpSquare = null;
                 return;
             } else {
@@ -224,7 +247,7 @@ function targetFire(y, x) {
             userRender();
             if (shipWasSunk(userShips, next[0], next[1])) {
                 console.log('ship with size 3 was sunk')
-                setTimeout(pcFire, 1000);
+                setTimeout(pcFire, 500);
                 tmpSquare = null;
                 return;
 
@@ -244,12 +267,12 @@ function targetFire(y, x) {
     if (shipWasSunk(userShips, next[0], next[1])) {
         // ship size was 2
         console.log('ship with length was sunk!')
-        setTimeout(pcFire, 1000);
+        setTimeout(pcFire, 500);
         tmpSquare = null;
     } else if (gameBoard.board[next[0]][next[1]] === '💢') {
         // ship size is more than 2, we need additional function-handler
         start = [y, x]
-        setTimeout(() => targetFire(next[0], next[1]), 1000);
+        setTimeout(() => targetFire(next[0], next[1]), 500);
     } else {
         // ship was not sunk, pc missed
         tmpSquare = [y, x]
@@ -262,9 +285,9 @@ function handleFire() {
     if (activePlayer === 0) {
         fireUser();
     } else if (activePlayer === 1 && tmpSquare) {
-        targetFire(tmpSquare[0], tmpSquare[1]);
+        setTimeout(() => targetFire(tmpSquare[0], tmpSquare[1]), 500);
     } else {
-        pcFire();
+        setTimeout(pcFire, 500);
     }
 }
 
