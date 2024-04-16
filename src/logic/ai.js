@@ -1,31 +1,9 @@
 "use strict";
 
-let surroundingSquares = [
-    // diag
-    [1, -1],
-    [-1, -1],
-    [1, 1],
-    [-1, 1],
-    // horiz
-    [0, -1],
-    [0, 1],
-    // vert
-    [-1, 0],
-    [1, 0],
-
-]
-
-let diagonalSquares = [
-    [1, -1],
-    [-1, -1],
-    [1, 1],
-    [-1, 1],
-]
-
 let mainSquares = [
     [0, -1],
-    [1, 0],
     [0, 1],
+    [1, 0],
     [-1, 0],
 ]
 
@@ -43,35 +21,21 @@ function checkBoundaries([x, y]) {
     return (x >= 0 && x < 10) && (y >= 0 && y < 10)
 }
 
-// check if ship with length 1 is Sunk and also checks if length of ship is more than 1
-// If after hitting ship, water outside ship is not surrounded, it means ship size is more than 1
-
-// ship with size of 1 is edge case, we check every square outside of this ship
-export function shipOfOneSunk(board, y, x, skip = [100, 100]) {
-    for (let surrCoords of surroundingSquares) {
-        if (surrCoords[0] === skip[0] && surrCoords[1] === skip[1]) continue;
-        let validSquare = [y + surrCoords[0], x + surrCoords[1]]
-        if (!checkBoundaries(validSquare)) continue;
-        else if (board[validSquare[0]][validSquare[1]] === ' ') {
-            return false;
+export function shipWasSunk(ships, y, x) {
+    for (let ship in ships){
+        for (let coords of ships[ship].coords){
+            if (coords[0] === y && coords[1] === x){
+                return ships[ship].isSunk();
+            }
         }
     }
-    return true;
 }
 
-// if function above returns false, it means ship length is more than 1
-// now we can check main direction, horizontally and vertically and we will get direction of ship
-// but firstly computer has to fire in 4 main directions
-
-
-// Algorithm:
-// 1) check if ship was size of 1, if true, ship size was only 1, and we can generate new random coords, otherwise ->
-// 2) fire in 4 main directions E-W-N-S and after each of them check both directions and finding out what direction of ship
-// 3) After finding direction of ship -> check their start-1 and end+1 if they are water -> then ship size is more than 2
-// otherwise ship size was 2
-// 4) Repeat process for ship with size 3 and 4
-
 export function fireMainDirections(board, y, x){
+    board = board.map(row => row.map(cell => {
+        if (cell === '#') cell = ' ';
+        return cell;
+    }));
     const output = [];
     for (let square of mainSquares){
         let validSquare = [y + square[0], x + square[1]];
@@ -105,4 +69,88 @@ export function shipIsVert(board, y, x) {
     return false;
 }
 
-export default {shipOfOneSunk, fireMainDirections, shipIsVert, shipIsHoriz}
+let leftSquares = [
+    [0, -1],
+    [0, -2],
+]
+
+let rightSquares = [
+    [0, 1],
+    [0, 2],
+]
+
+let downSquares = [
+    [-1, 0],
+    [-2, 0],
+]
+
+let topSquares = [
+    [1, 0],
+    [2, 0],
+]
+
+export function fireLeft(board, y, x){
+    board = board.map(row => row.map(cell => {
+        if (cell === '#') cell = ' ';
+        return cell;
+    }));
+    let output = []
+    for (let square of leftSquares){
+        let validSquare = [y + square[0], x + square[1]]
+        if (!checkBoundaries(validSquare)) continue;
+        if (board[validSquare[0]][validSquare[1]] === ' ') {
+            output.push(validSquare)
+        }
+    }
+    return output;
+}
+
+export function fireRight(board, y, x){
+    board = board.map(row => row.map(cell => {
+        if (cell === '#') cell = ' ';
+        return cell;
+    }));
+    let output = []
+    for (let square of rightSquares){
+        let validSquare = [y + square[0], x + square[1]]
+        if (!checkBoundaries(validSquare)) continue;
+        if (board[validSquare[0]][validSquare[1]] === ' ') {
+            output.push(validSquare)
+        }
+    }
+    return output;
+}
+
+export function fireDown(board, y, x){
+    board = board.map(row => row.map(cell => {
+        if (cell === '#') cell = ' ';
+        return cell;
+    }));
+    let output = []
+    for (let square of downSquares){
+        let validSquare = [y + square[0], x + square[1]]
+        if (!checkBoundaries(validSquare)) continue;
+        if (board[validSquare[0]][validSquare[1]] === ' ') {
+            output.push(validSquare)
+        }
+    }
+    return output;
+}
+
+export function fireTop(board, y, x){
+    board = board.map(row => row.map(cell => {
+        if (cell === '#') cell = ' ';
+        return cell;
+    }));
+    let output = []
+    for (let square of topSquares){
+        let validSquare = [y + square[0], x + square[1]]
+        if (!checkBoundaries(validSquare)) continue;
+        if (board[validSquare[0]][validSquare[1]] === ' ') {
+            output.push(validSquare)
+        }
+    }
+    return output;
+}
+
+export default {shipWasSunk, fireMainDirections, shipIsVert, shipIsHoriz, fireLeft, fireRight, fireTop, fireDown}

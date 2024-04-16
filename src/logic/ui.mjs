@@ -2,7 +2,16 @@
 
 import Gameboard from "./gameboard.js";
 import Ship from "./ship.js";
-import {shipOfOneSunk, fireMainDirections, shipIsVert, shipIsHoriz} from "./ai.js";
+import {
+    fireMainDirections,
+    shipIsVert,
+    shipIsHoriz,
+    shipWasSunk,
+    fireRight,
+    fireLeft,
+    fireTop,
+    fireDown
+} from "./ai.js";
 
 const errorMsg = document.querySelector('.error')
 const dialog = document.querySelector('dialog')
@@ -18,15 +27,11 @@ const players = {
 // so far it works only if you exclude Ship with size 1 and 2
 const userShips = {
     // '1': new Ship(1),
-    '2': new Ship(1),
-    '3': new Ship(1),
-    '4': new Ship(1),
+    '3': new Ship(3),
+    '4': new Ship(3),
     // '5': new Ship(2),
-    '6': new Ship(2),
-    '7': new Ship(2),
-    '8': new Ship(3),
-    '9': new Ship(3),
-    '10': new Ship(3),
+    '11': new Ship(3),
+    '12': new Ship(3),
 }
 
 const pcShips = {
@@ -136,29 +141,13 @@ function pcFire() {
         [y, x] = getRandomCoordinates();
     } while (!active.receiveAttack([y, x], userShips));
     if (active.board[y][x] === '💢') { // if pc hits user's ship
-        if (active.gameOver(userShips)) {
+        if (shipWasSunk(userShips, y, x)) {
+            console.log('test')
             userRender();
-            const congratulations = document.querySelector('.congratulations')
-            congratulations.textContent = 'Noooooooo PC won :('
-            dialog.showModal();
+            setTimeout(pcFire, 1000);
             return;
-        }
-        if (shipOfOneSunk(active.board, y, x)) {
-            setTimeout(pcFire, 1000)
-            userRender();
-            console.log('ship with size 1 was sunk')
-            return;
-        } else { // if ship did not sink, his size is more than 2
-            const boardFromPcView = active.board.map(row => row.map(cell => {
-                if (cell === '#'){
-                    cell = ' ';
-                }
-                return cell;
-            }))
-            q = fireMainDirections(boardFromPcView, y, x)
-            startCoords = [y, x]
-            setTimeout(() => smartPc(y, x), 1000);
-            userRender();
+        } else {
+            setTimeout(() => targetFire(y, x), 1000)
             return;
         }
     }
@@ -166,146 +155,105 @@ function pcFire() {
     changePlayer();
 }
 
-let q = []
-let startCoords = []
-let wasHit = false;
+let tmpSquare = null;
+let start = null;
+let queue = []
 
+function targetFire(y, x) {
 
-// not finished bad solution
-function smartPc(y, x) {
-    if (q.length === 0){
-        console.log('q is empty')
-        return;
-    }
-    let active = players[0]
-    if (!shipIsHoriz(active.board, y, x) || !shipIsVert(active.board, y, x)){
-        const nextSquare = q.shift()
-        active.receiveAttack(nextSquare, userShips)
-        userRender();
-        if (active.gameOver(userShips)) {
-            const congratulations = document.querySelector('.congratulations')
-            congratulations.textContent = 'Noooooooo PC won :('
-            dialog.showModal();
-            return;
-        }
-        if (active.board[nextSquare[0]][nextSquare[1]] === '💢') {
-            // if ship was size of 2
-            // trying to find direction of ship
-            const skip = [nextSquare[0] - startCoords[0], nextSquare[1] - startCoords[1]]
-            const skip2 = [startCoords[0] - nextSquare[0], startCoords[1] - nextSquare[1]]
-            if (nextSquare[1] > startCoords[1]) {
-                // ship is horizontally
-                if (shipOfOneSunk(active.board, startCoords[0], startCoords[1], skip) && shipOfOneSunk(active.board, nextSquare[0], nextSquare[1], skip2)) {
-                    // ship was sunk
-                    q = [];
-                    startCoords = [];
-                    wasHit = false;
-                    setTimeout(pcFire, 1000);
-                    return;
-                } else {
-                    // if size is more than 2
-                    console.log('ship was not sunk')
-                    q = [];
-                    wasHit = false;
-                    if (startCoords[1] - 1 >= 0) q.push([startCoords[0], startCoords[1] - 1])
-                    if (nextSquare[1] + 1 <= 9) q.push([nextSquare[0], nextSquare[1] + 1])
-                    setTimeout(() => smartPc(nextSquare[0], nextSquare[1]), 1000);
-                    return;
-                }
-            } else if (nextSquare[1] < startCoords[1]){
-                if (shipOfOneSunk(active.board, startCoords[0], startCoords[1], skip2) && shipOfOneSunk(active.board, nextSquare[0], nextSquare[1], skip)) {
-                    // ship was sunk
-                    q = [];
-                    startCoords = [];
-                    wasHit = false;
-                    setTimeout(pcFire, 1000);
-                    return;
-                } else {
-                    // if size is more than 2
-                    console.log('ship was not sunk')
-                    q = [];
-                    wasHit = false;
-                    if (startCoords[1] + 1 <= 9) q.push([startCoords[0], startCoords[1] + 1])
-                    if (nextSquare[1] - 1 >= 0) q.push([nextSquare[0], nextSquare[1] - 1])
-                    setTimeout(() => smartPc(nextSquare[0], nextSquare[1]), 1000);
-                    return;
-                }
-            } else if (nextSquare[0] > startCoords[0]){
-                // ship is vertically
-                if (shipOfOneSunk(active.board, startCoords[0], startCoords[1], skip) && shipOfOneSunk(active.board, nextSquare[0], nextSquare[1], skip2)) {
-                    // ship was sunk
-                    q = [];
-                    startCoords = [];
-                    wasHit = false;
-                    setTimeout(pcFire, 1000);
-                    return;
-                } else {
-                    // if size is more than 2
-                    q = [];
-                    wasHit = false;
-                    if (startCoords[0] - 1 >= 0) q.push([startCoords[0] - 1, startCoords[1]])
-                    if (nextSquare[1] + 1 <= 9) q.push([nextSquare[0] + 1, nextSquare[1]])
-                    setTimeout(() => smartPc(nextSquare[0], nextSquare[1]), 1000);
-                    return;
-                }
-            } else if (nextSquare[0] < startCoords[0]) {
-                // ship is vertically
-                if (shipOfOneSunk(active.board, startCoords[0], startCoords[1], skip2) && shipOfOneSunk(active.board, nextSquare[0], nextSquare[1], skip)) {
-                    // ship was sunk
-                    q = [];
-                    startCoords = [];
-                    wasHit = false;
-                    setTimeout(pcFire, 1000);
-                    return;
-                } else {
-                    // if size is more than 2
-                    q = [];
-                    wasHit = false;
-                    if (startCoords[0] + 1 <= 9) q.push([startCoords[0] + 1, startCoords[1]])
-                    if (nextSquare[0] - 1 >= 0) q.push([nextSquare[0] - 1, nextSquare[1]])
-                    setTimeout(() => smartPc(nextSquare[0], nextSquare[1]), 1000);
-                    return;
-                }
+    const gameBoard = players[0]
+
+    if (shipIsHoriz(gameBoard.board, y, x)) {
+        // after handling ship of size 2, we determined that ship size is > 2
+        // now we will handle this ship, if that ship is horizontal
+        // compare only horizontal coords
+        if (x >= start[1]) {
+            queue = fireRight(gameBoard.board, y, x);
+            const next = queue.shift()
+            gameBoard.receiveAttack(next, userShips);
+            userRender();
+            if (shipWasSunk(userShips, next[0], next[1])) {
+                console.log('ship with size 3 was sunk')
+                setTimeout(pcFire, 1000);
+                tmpSquare = null;
+                return;
+            } else {
+                changePlayer();
+                return;
             }
         } else {
-            wasHit = true;
-            console.log('Was hit with ship 2')
-            console.log(JSON.stringify(q))
-            changePlayer();
-            return;
+            queue = fireLeft(gameBoard.board, y, x)
+            const next = queue.shift();
+            gameBoard.receiveAttack(next, userShips);
+            userRender();
+            if (shipWasSunk(userShips, next[0], next[1])) {
+                console.log('ship with size 3 was sunk')
+                setTimeout(pcFire, 1000);
+                tmpSquare = null;
+                return;
+
+            } else {
+                tmpSquare = [start[0], start[1]]
+                changePlayer();
+                return;
+            }
         }
     }
-    if (shipIsHoriz(active.board, y, x)) {
-        const horNextSquare = q.shift();
-        active.receiveAttack(horNextSquare, userShips);
-        userRender();
-        if (active.board[horNextSquare[0]][horNextSquare[1]] === '💢') {
-            // if ship was size of 3
-            console.log('Ship with size of 3 was sunk')
-            wasHit = false;
-            q = [];
-            startCoords = [];
-            setTimeout(pcFire, 1000);
+    if (shipIsVert(gameBoard.board, y, x)) {
+        // after handling ship of size 2, we determined that ship size is > 2
+        // now we will handle this ship, if that ship is vertical
+        // compare only vertical coords
+        if (y > start[0]) {
+            queue = fireTop(gameBoard.board, y, x);
+            const next = queue.shift()
+            gameBoard.receiveAttack(next, userShips);
+            userRender();
+            if (shipWasSunk(userShips, next[0], next[1])) {
+                console.log('ship with size 3 was sunk')
+                setTimeout(pcFire, 1000);
+                tmpSquare = null;
+                return;
+            } else {
+                changePlayer();
+                return;
+            }
         } else {
-            wasHit = true;
-            changePlayer();
+            queue = fireDown(gameBoard.board, y, x)
+            const next = queue.shift();
+            gameBoard.receiveAttack(next, userShips);
+            userRender();
+            if (shipWasSunk(userShips, next[0], next[1])) {
+                console.log('ship with size 3 was sunk')
+                setTimeout(pcFire, 1000);
+                tmpSquare = null;
+                return;
+
+            } else {
+                changePlayer();
+                return;
+            }
         }
     }
-    if (shipIsVert(active.board, y, x)){
-        const verNextSquare = q.shift();
-        active.receiveAttack(verNextSquare, userShips);
-        userRender();
-        if (active.board[verNextSquare[0]][verNextSquare[1]] === '💢') {
-            // if ship was size of 3
-            console.log('Ship with size of 3 was sunk')
-            wasHit = false;
-            q = [];
-            startCoords = [];
-            setTimeout(pcFire, 1000);
-        } else {
-            wasHit = true;
-            changePlayer();
-        }
+    console.log('test')
+    const q = fireMainDirections(gameBoard.board, y, x)
+    const next = q.shift();
+
+    gameBoard.receiveAttack(next, userShips);
+    userRender();
+
+    if (shipWasSunk(userShips, next[0], next[1])) {
+        // ship size was 2
+        console.log('ship with length was sunk!')
+        setTimeout(pcFire, 1000);
+        tmpSquare = null;
+    } else if (gameBoard.board[next[0]][next[1]] === '💢') {
+        // ship size is more than 2, we need additional function-handler
+        start = [y, x]
+        setTimeout(() => targetFire(next[0], next[1]), 1000);
+    } else {
+        // ship was not sunk, pc missed
+        tmpSquare = [y, x]
+        changePlayer();
     }
 }
 
@@ -313,8 +261,8 @@ function smartPc(y, x) {
 function handleFire() {
     if (activePlayer === 0) {
         fireUser();
-    } else if (activePlayer === 1 && wasHit) {
-        smartPc(startCoords[0], startCoords[1]);
+    } else if (activePlayer === 1 && tmpSquare) {
+        targetFire(tmpSquare[0], tmpSquare[1]);
     } else {
         pcFire();
     }
