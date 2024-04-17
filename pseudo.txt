@@ -30,4 +30,4 @@
 
 4) Main game loop and DOM manipulation
 4.1) create user interface
-4.2)
+4.2) create restart and randomize button

@@ -92,7 +92,7 @@ class Gameboard {
 
     placeShip(ship, randomY, randomX) {
         let shipCoords = [];
-        if (ship.direction === 0) {
+        if (ship.direction === 0 || ship.direction === 1) {
             // placing ship -> horizontally
             for (let j = randomX; j < randomX + ship.length; j++) {
                 this.board[randomY][j] = '#';

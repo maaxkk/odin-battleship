@@ -65,6 +65,12 @@ players[activePlayer].placeShips(pcShips)
 
 changePlayer();
 
+function gameOverModal(text){
+    const congratulations = document.querySelector('.congratulations')
+    congratulations.textContent = text;
+    dialog.showModal();
+}
+
 function userRender() {
     const board = document.querySelector('.user-board');
     const active = players[0];
@@ -121,7 +127,7 @@ function attackHandler(event) {
                 active.receiveAttack([+squareY, +squareX], pcShips)
                 pcRender();
                 if (active.gameOver(pcShips)) {
-                    dialog.showModal();
+                    gameOverModal('Congratulations with victory!')
                     return;
                 }
                 return;
@@ -144,6 +150,10 @@ function pcFire() {
     do {
         [y, x] = getRandomCoordinates();
     } while (!active.receiveAttack([y, x], userShips));
+    if (active.gameOver(userShips)) {
+        gameOverModal(`Noooo you lost to pc you've made`)
+        return;
+    }
     if (active.board[y][x] === '💢') { // if pc hits user's ship
         if (shipWasSunk(userShips, y, x)) {
             console.log('test')
@@ -191,6 +201,10 @@ function targetFire(y, x) {
                 }
         } else {
             queue = fireLeft(gameBoard.board, y, x)
+            if (queue.length === 0){
+                setTimeout(() => targetFire(start[0], start[1]), 500)
+                return;
+            }
             const next = queue.shift();
             gameBoard.receiveAttack(next, userShips);
             userRender();
@@ -203,6 +217,7 @@ function targetFire(y, x) {
                 // ship size is more than 3
                 if (next[1] - 1 >= 0) {
                     gameBoard.receiveAttack([next[0], next[1]-1], userShips)
+                    userRender();
                     if (shipWasSunk(userShips, next[0], next[1] - 1)){
                         setTimeout(pcFire, 500);
                         return;
@@ -233,7 +248,7 @@ function targetFire(y, x) {
             userRender();
             if (shipWasSunk(userShips, next[0], next[1])) {
                 console.log('ship with size 3 was sunk')
-                setTimeout(pcFire, 500);
+                setTimeout(pcFire, 1000);
                 tmpSquare = null;
                 return;
             } else {
@@ -247,7 +262,7 @@ function targetFire(y, x) {
             userRender();
             if (shipWasSunk(userShips, next[0], next[1])) {
                 console.log('ship with size 3 was sunk')
-                setTimeout(pcFire, 500);
+                setTimeout(pcFire, 1000);
                 tmpSquare = null;
                 return;
 
