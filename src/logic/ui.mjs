@@ -48,7 +48,7 @@ const pcShips = {
     '7': new Ship(2),
     '8': new Ship(3),
     '9': new Ship(3),
-    '10': new Ship(3),
+    '10': new Ship(4),
 }
 
 let activePlayer = 0;
@@ -65,7 +65,7 @@ players[activePlayer].placeShips(pcShips)
 
 changePlayer();
 
-function gameOverModal(text){
+function gameOverModal(text) {
     const congratulations = document.querySelector('.congratulations')
     congratulations.textContent = text;
     dialog.showModal();
@@ -103,7 +103,7 @@ function pcRender() {
                 btn.textContent = active.board[i][j]
                 btn.classList.add('surrounded')
             } else btn.classList.add('cell')
-            // btn.textContent = active.board[i][j]
+            btn.textContent = active.board[i][j]
             board.appendChild(btn)
         }
     }
@@ -195,13 +195,13 @@ function targetFire(y, x) {
                 // ship size is more than 3
                 setTimeout(() => targetFire(next[0], next[1]), 500)
                 return;
-                } else {
-                    changePlayer();
-                    return;
-                }
+            } else {
+                changePlayer();
+                return;
+            }
         } else {
             queue = fireLeft(gameBoard.board, y, x)
-            if (queue.length === 0){
+            if (queue.length === 0) {
                 setTimeout(() => targetFire(start[0], start[1]), 500)
                 return;
             }
@@ -216,9 +216,9 @@ function targetFire(y, x) {
             } else if (gameBoard.board[next[0]][next[1]] === '💢') {
                 // ship size is more than 3
                 if (next[1] - 1 >= 0) {
-                    gameBoard.receiveAttack([next[0], next[1]-1], userShips)
+                    gameBoard.receiveAttack([next[0], next[1] - 1], userShips)
                     userRender();
-                    if (shipWasSunk(userShips, next[0], next[1] - 1)){
+                    if (shipWasSunk(userShips, next[0], next[1] - 1)) {
                         setTimeout(pcFire, 500);
                         return;
                     } else {
@@ -243,6 +243,10 @@ function targetFire(y, x) {
         // compare only vertical coords
         if (y > start[0]) {
             queue = fireTop(gameBoard.board, y, x);
+            if (queue.length === 0){
+                setTimeout(() => targetFire(start[0], start[1]), 500)
+                return;
+            }
             const next = queue.shift()
             gameBoard.receiveAttack(next, userShips);
             userRender();
@@ -251,12 +255,20 @@ function targetFire(y, x) {
                 setTimeout(pcFire, 1000);
                 tmpSquare = null;
                 return;
+            } else if (gameBoard.board[next[0]][next[1]] === '💢') {
+                // ship size is more than 3
+                setTimeout(() => targetFire(next[0], next[1]), 500)
+                return;
             } else {
                 changePlayer();
                 return;
             }
         } else {
             queue = fireDown(gameBoard.board, y, x)
+            if (queue.length === 0) {
+                setTimeout(() => targetFire(start[0], start[1]), 500)
+                return;
+            }
             const next = queue.shift();
             gameBoard.receiveAttack(next, userShips);
             userRender();
@@ -265,8 +277,26 @@ function targetFire(y, x) {
                 setTimeout(pcFire, 1000);
                 tmpSquare = null;
                 return;
+            } else if (gameBoard.board[next[0]][next[1]] === '💢') {
+                // ship size is more than 3
+                if (next[0] - 1 >= 0) {
+                    gameBoard.receiveAttack([next[0] - 1, next[1]], userShips)
+                    userRender();
+                    if (shipWasSunk(userShips, next[0] - 1, next[1])) {
+                        setTimeout(pcFire, 500);
+                        return;
+                    } else {
+                        setTimeout(() => targetFire(start[0], start[1]), 500);
+                        return;
+                    }
+                } else {
+                    tmpSquare = [start[0], start[1]]
+                    changePlayer();
+                    return;
+                }
 
             } else {
+                tmpSquare = [start[0], start[1]]
                 changePlayer();
                 return;
             }
@@ -281,7 +311,7 @@ function targetFire(y, x) {
 
     if (shipWasSunk(userShips, next[0], next[1])) {
         // ship size was 2
-        console.log('ship with length was sunk!')
+        console.log('ship with length 2 was sunk!')
         setTimeout(pcFire, 500);
         tmpSquare = null;
     } else if (gameBoard.board[next[0]][next[1]] === '💢') {
