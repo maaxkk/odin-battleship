@@ -103,7 +103,7 @@ function pcRender() {
                 btn.textContent = active.board[i][j]
                 btn.classList.add('surrounded')
             } else btn.classList.add('cell')
-            btn.textContent = active.board[i][j]
+            // btn.textContent = active.board[i][j]
             board.appendChild(btn)
         }
     }
@@ -151,7 +151,8 @@ function pcFire() {
         [y, x] = getRandomCoordinates();
     } while (!active.receiveAttack([y, x], userShips));
     if (active.gameOver(userShips)) {
-        gameOverModal(`Noooo you lost to pc you've made`)
+        userRender();
+        gameOverModal(`PC won!`)
         return;
     }
     if (active.board[y][x] === '💢') { // if pc hits user's ship
